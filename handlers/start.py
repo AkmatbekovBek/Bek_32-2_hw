@@ -1,6 +1,9 @@
 from config import bot
 from aiogram import types, Dispatcher
 from database import sql_commands
+from const import START_MENU_TEXT
+from keyboards.start_kb import admin_select_users_keyboard, start_keyboard
+
 
 
 async def start_button(message: types.Message):
@@ -11,7 +14,16 @@ async def start_button(message: types.Message):
         last_name=message.from_user.last_name)
 
     print(message)
-    await message.reply('hello')
+    with open("E:\pythonProject\Bek_32-2_hw1\helloPhoto.png", "rb") as photo:
+        await bot.send_photo(
+            chat_id=message.chat.id,
+            photo=photo,
+            caption=START_MENU_TEXT.format(
+                user=message.from_user.username
+            ),
+            parse_mode=types.ParseMode.MARKDOWN
+        )
+
 
 
 def register_start_handler(dp: Dispatcher):
