@@ -14,7 +14,7 @@ async def start_button(message: types.Message):
         last_name=message.from_user.last_name)
 
     print(message)
-    with open("E:\pythonProject\Bek_32-2_hw1\helloPhoto.png", "rb") as photo:
+    with open("E:\pythonProject\Bek_32-2_hw\media\helloPhoto.png", "rb") as photo:
         await bot.send_photo(
             chat_id=message.chat.id,
             photo=photo,
