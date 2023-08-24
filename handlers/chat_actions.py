@@ -6,9 +6,9 @@ from database import sql_commands
 
 
 async def echo_ban(message: types.Message):
-    ban_words = ['damn', 'fuck', 'bitch', 'freak', 'fuck you', 'gay', 'nigger', 'shit', 'whore', 'poop', 'сука', 'блять', 'пиздец', 'дурак', 'дура', 'мразь', 'шалава']
+    ban_words = ['damn', 'fuck', 'bitch', 'freak', 'fuck you', 'gay', 'nigger', 'shit', 'whore', 'poop', 'сука', 'блять', 'пиздец', 'дурак', 'дура', 'мразь', 'шалава', 'гей', 'бл']
 
-    if message.chat.id == -1001890038257:
+    if message.chat.id == -1001936389612:  #group=Материмся: -1001936389612 group=Моя: -1001890038257
         for word in ban_words:
             if word in message.text.lower().replace(" ", ""):
                 await bot.delete_message(

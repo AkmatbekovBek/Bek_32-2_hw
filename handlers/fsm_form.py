@@ -6,7 +6,7 @@ from config import bot
 from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from database.sql_commands import Database
-
+from keyboards.fsm_keyboards import select_my_profile_keyboard
 
 
 class Form_States(StatesGroup):
@@ -75,15 +75,35 @@ async def load_photo(message: types.Message,
         destination_dir="E:\pythonProject\Bek_32-2_hw\media"
     )
     async with state.proxy() as data:
-        with open(path.name, 'rb') as photo:
-            await bot.send_photo(
-                chat_id=message.chat.id,
-                photo=photo,
-                caption=f'Nickname: {data["nickname"]}\n'
-                        f'Age: {data["age"]}\n'
-                        f'Place Of Birth: {data["PlaceOfBirth"]}\n'
-                        f'Biography: {data["biography"]}\n'
+
+        form_existed = Database().sql_select_user_form_by_telegram_id_command(
+            message.from_user.id)
+        if form_existed:
+            Database().sql_update_user_form_command(
+                nickname=data['nickname'],
+                age=data['age'],
+                PlaceOfBirth=data['PlaceOfBirth'],
+                biography=data['biography'],
+                photo=path.name,
+                telegram_id=message.from_user.id,
             )
+            await message.reply("Вы успешно обновили свою анкету\n"
+                                "Можете просмотреть свою анкету нажав на кнопку мой профиль",
+                                reply_markup=await select_my_profile_keyboard())
+        else:
+            Database().sql_insert_user_form_command(
+                telegram_id=message.from_user.id,
+                nickname=data['nickname'],
+                age=data['age'],
+                PlaceOfBirth=data['PlaceOfBirth'],
+                biography=data['biography'],
+                photo=path.name,
+            )
+            await message.reply("Вы успешно зарегистрировали свою анкету\n"
+                                "Можете просмотреть свою анкету нажав на кнопку мой профиль",
+                                reply_markup=await select_my_profile_keyboard())
+    await state.finish()
+
 
 
 def register_fsm_form_handlers(dp: Dispatcher):
