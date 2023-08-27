@@ -11,6 +11,7 @@ from database import sql_commands
 
 
 
+
 async def onstart_up(_):
     db = sql_commands.Database()
     db.sql_create_db()

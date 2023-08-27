@@ -19,7 +19,7 @@ async def admin_select_users_keyboard():
 
 async def new_start_keyboard():
     markup = InlineKeyboardMarkup()
-    random_profiles_button = InlineKeyboardButton(
+    random_profiles_button: InlineKeyboardButton = InlineKeyboardButton(
         "Просмотр анкет 🎉",
         callback_data="random_profiles"
     )
@@ -31,12 +31,18 @@ async def new_start_keyboard():
         "Реферальная программа",
         callback_data="reference_menu"
     )
+    parser_button = InlineKeyboardButton(
+        "Новости 📰",
+        callback_data="news_parsing"
+    )
     markup.add(
         random_profiles_button
     ).add(
         my_profile_button
     ).add(
         referral_button
+    ).add(
+        parser_button
     )
     return markup
 
@@ -78,11 +84,23 @@ async def my_profile_detail_keyboard():
 async def if_not_profile_keyboard():
     markup = InlineKeyboardMarkup()
     signup_button = InlineKeyboardButton(
-        "Регистрация 💡",
+        "Регистрация ✔",
         callback_data="signup"
     )
     markup.row(
-        signup_button,
+        signup_button
+    )
+    return markup
+
+
+async def save_news_keyboard(news_id):
+    markup = InlineKeyboardMarkup()
+    save_button = InlineKeyboardButton(
+        "Сохранить 💾",
+        callback_data=f"save_news_{news_id}"
+    )
+    markup.add(
+        save_button,
     )
     return markup
 

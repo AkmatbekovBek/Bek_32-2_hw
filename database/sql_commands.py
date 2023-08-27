@@ -15,6 +15,8 @@ class Database:
         self.connection.execute(sql_queries.CREATE_USER_FORM_TABLE_QUERY)
         self.connection.execute(sql_queries.CREATE_LIKE_FORM_TABLE_QUERY)
         self.connection.execute(sql_queries.CREATE_REFERENCE_USERS_TABLE_QUERY)
+        self.connection.execute(sql_queries.CREATE_NEWS_TABLE_QUERY)
+        self.connection.execute(sql_queries.CREATE_FAVOURITE_NEWS_TABLE_QUERY)
         self.connection.commit()
 
     def sql_insert_user_command(self, telegram_id, username,
@@ -25,7 +27,7 @@ class Database:
                              username,
                              first_name,
                              last_name,
-
+                             None
                              )
                             )
         self.connection.commit()
@@ -100,16 +102,6 @@ class Database:
         ).fetchall()
 
 
-    def sql_select_disliked_form_command(self, owner_telegram_id, disliker_telegram_id):
-        self.cursor.row_factory = lambda cursor, row: {
-            "id": row[0],
-            "owner_telegram_id": row[1],
-            "disliker_telegram_id": row[2],
-        }
-        return self.cursor.execute(
-            sql_queries.SELECT_DISLIKE_FORM_QUERY,
-            (owner_telegram_id, disliker_telegram_id,)
-        ).fetchall()
 
     def sql_update_user_form_command(self, nickname, age, PlaceOfBirth, biography, photo, telegram_id):
         self.cursor.execute(sql_queries.UPDATE_USER_FORM_QUERY,
@@ -175,6 +167,51 @@ class Database:
         }
         return self.cursor.execute(
             sql_queries.SELECT_ALL_REFERENCE_QUERY,
+            (owner_telegram_id,)
+        ).fetchall()
+
+    def sql_insert_news_command(self, link):
+        self.cursor.execute(sql_queries.INSERT_NEWS_QUERY,
+                            (None,
+                             link,
+                             )
+                            )
+        self.connection.commit()
+
+    def sql_select_specific_news_command(self, link):
+        self.cursor.row_factory = lambda cursor, row: {
+            "id": row[0],
+            "link": row[1],
+        }
+        return self.cursor.execute(
+            sql_queries.SELECT_SPECIFIC_NEWS_QUERY,
+            (link,)
+        ).fetchall()
+
+    def sql_select_specific_news_for_favourite_command(self, news_id):
+        self.cursor.row_factory = lambda cursor, row: {
+            "link": row[0],
+        }
+        return self.cursor.execute(
+            sql_queries.SELECT_SPECIFIC_NEWS_FOR_FAVOURITE_QUERY,
+            (news_id,)
+        ).fetchall()
+
+    def sql_insert_favourite_news_command(self, owner_telegram_id, link):
+        self.cursor.execute(sql_queries.INSERT_FAVOURITE_NEWS_QUERY,
+                            (None,
+                             owner_telegram_id,
+                             link,
+                             )
+                            )
+        self.connection.commit()
+
+    def sql_select_owner_news_command(self, owner_telegram_id):
+        self.cursor.row_factory = lambda cursor, row: {
+            "link": row[0],
+        }
+        return self.cursor.execute(
+            sql_queries.SELECT_OWNER_NEWS_QUERY,
             (owner_telegram_id,)
         ).fetchall()
 

@@ -4,9 +4,10 @@ import re
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from config import bot
 from aiogram import types, Dispatcher
+from scraping.news_scraper import NewsScraper
 
 from database.sql_commands import Database
-from keyboards.start_kb import like_dislike_keyboard, my_profile_detail_keyboard, if_not_profile_keyboard
+from keyboards.start_kb import like_dislike_keyboard, my_profile_detail_keyboard, if_not_profile_keyboard, save_news_keyboard
 
 
 async def admin_user_call(call: types.CallbackQuery):
@@ -71,12 +72,13 @@ async def like_call(call: types.CallbackQuery):
     owner_telegram_id = re.sub("like_button_", "", call.data)
     is_like_existed = Database().sql_select_liked_form_command(
         owner_telegram_id=owner_telegram_id,
-        liker_telegram_id=call.from_user.id
+        liker_telegram_id=call.from_user.id,
     )
     if is_like_existed:
         await bot.send_message(
             chat_id=call.message.chat.id,
-            text="Ты уже лайкал эту анкету"
+            text="Ты уже *лайкал* эту *анкету*",
+            parse_mode=types.ParseMode.MARKDOWN
         )
     else:
         Database().sql_insert_like_form_command(
@@ -85,32 +87,7 @@ async def like_call(call: types.CallbackQuery):
         )
         await bot.send_message(
             chat_id=owner_telegram_id,
-            text=f"Кому то понравилась твоя анкета \nМожешь перейти по ссылке и пообщаться [{call.from_user.first_name}](tg://user?id={call.from_user.id})",
-            parse_mode=types.ParseMode.MARKDOWN_V2
-
-        )
-    await random_profiles_call(call=call)
-
-
-async def dislike_call(call: types.CallbackQuery):
-    owner_telegram_id = re.sub("dislike_button_", "", call.data)
-    is_dislike_existed = Database().sql_select_disliked_form_command(
-        owner_telegram_id=owner_telegram_id,
-        disliker_telegram_id=call.from_user.id
-    )
-    if is_dislike_existed:
-        await bot.send_message(
-            chat_id=call.message.chat.id,
-            text="Ты уже ставил дизлайк на эту анкету"
-        )
-    else:
-        Database().sql_insert_like_form_command(
-            owner_telegram_id=owner_telegram_id,
-            disliker_telegram_id=call.from_user.id
-        )
-        await bot.send_message(
-            chat_id=owner_telegram_id,
-            text=f"Кому то не понравилась твоя анкета \nМожешь перейти по ссылке и ответить взаимностью [{call.from_user.first_name}](tg://user?id={call.from_user.id})",
+            text=f"Кому то понравилась твоя *анкета*✨ \nМожешь перейти на его *профиль* и пообщаться: <<<[{call.from_user.first_name}](tg://user?id={call.from_user.id})>>>",
             parse_mode=types.ParseMode.MARKDOWN_V2
 
         )
@@ -125,9 +102,53 @@ async def delete_profile_call(call: types.CallbackQuery):
     )
 
 
+async def news_parsing_call(call: types.CallbackQuery):
+    scraper = NewsScraper()
+    data = scraper.parse_data()
+    for url in data:
+        Database().sql_insert_news_command(link=url)
+        news_id = Database().sql_select_specific_news_command(link=url)
+        print(news_id[0]['id'])
+        await bot.send_message(
+            chat_id=call.message.chat.id,
+            text=url,
+            reply_markup=await save_news_keyboard(news_id=news_id[0]['id'])
+        )
+
+
+async def save_news_call(call: types.CallbackQuery):
+    news_id = re.sub("save_news_", "", call.data)
+    link = Database().sql_select_specific_news_for_favourite_command(
+        news_id=news_id
+    )
+    print(link[0]["link"])
+    Database().sql_insert_favourite_news_command(
+        owner_telegram_id=call.from_user.id,
+        link=link[0]["link"]
+    )
+    await bot.send_message(
+        chat_id=call.message.chat.id,
+        text="You saved news"
+    )
+
+
+async def my_news_call(call: types.CallbackQuery):
+    links = Database().sql_select_owner_news_command(
+        owner_telegram_id=call.from_user.id
+    )
+    for link in links:
+        await bot.send_message(
+            chat_id=call.message.chat.id,
+            text=link['link']
+        )
+
+
 def register_callback_handlers(dp: Dispatcher):
     dp.register_callback_query_handler(admin_user_call, lambda call: call.data == "admin_user_list")
     dp.register_callback_query_handler(my_profile_call, lambda call: call.data == "my_profile")
     dp.register_callback_query_handler(random_profiles_call, lambda call: call.data == "random_profiles")
     dp.register_callback_query_handler(like_call, lambda call: "like_button_" in call.data)
     dp.register_callback_query_handler(delete_profile_call, lambda call: call.data == "delete_profile")
+    dp.register_callback_query_handler(news_parsing_call, lambda call: call.data == "news_parsing")
+    dp.register_callback_query_handler(save_news_call, lambda call: "save_news_" in call.data)
+    dp.register_callback_query_handler(my_news_call, lambda call: call.data == "my_news_call_data")
