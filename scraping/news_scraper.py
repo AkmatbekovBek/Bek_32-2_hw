@@ -2,9 +2,6 @@ from parsel import Selector
 import requests
 
 
-#'//div[@class="b-content__inline_item"]/div[@class="b-content__inline_item-link"]/a/@href'
-#"https://rezka.ag/new/"
-
 
 class NewsScraper:
     PLUS_URL = "https://www.prnewswire.com"
