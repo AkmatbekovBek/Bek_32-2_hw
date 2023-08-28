@@ -15,8 +15,8 @@ class Database:
         self.connection.execute(sql_queries.CREATE_USER_FORM_TABLE_QUERY)
         self.connection.execute(sql_queries.CREATE_LIKE_FORM_TABLE_QUERY)
         self.connection.execute(sql_queries.CREATE_REFERENCE_USERS_TABLE_QUERY)
-        self.connection.execute(sql_queries.CREATE_NEWS_TABLE_QUERY)
-        self.connection.execute(sql_queries.CREATE_FAVOURITE_NEWS_TABLE_QUERY)
+        self.connection.execute(sql_queries.CREATE_FILMS_TABLE_QUERY)
+        self.connection.execute(sql_queries.CREATE_FAVOURITE_FILMS_TABLE_QUERY)
         self.connection.commit()
 
     def sql_insert_user_command(self, telegram_id, username,
@@ -170,35 +170,35 @@ class Database:
             (owner_telegram_id,)
         ).fetchall()
 
-    def sql_insert_news_command(self, link):
-        self.cursor.execute(sql_queries.INSERT_NEWS_QUERY,
+    def sql_insert_films_command(self, link):
+        self.cursor.execute(sql_queries.INSERT_FILMS_QUERY,
                             (None,
                              link,
                              )
                             )
         self.connection.commit()
 
-    def sql_select_specific_news_command(self, link):
+    def sql_select_specific_films_command(self, link):
         self.cursor.row_factory = lambda cursor, row: {
             "id": row[0],
             "link": row[1],
         }
         return self.cursor.execute(
-            sql_queries.SELECT_SPECIFIC_NEWS_QUERY,
+            sql_queries.SELECT_SPECIFIC_FILMS_QUERY,
             (link,)
         ).fetchall()
 
-    def sql_select_specific_news_for_favourite_command(self, news_id):
+    def sql_select_specific_films_for_favourite_command(self, films_id):
         self.cursor.row_factory = lambda cursor, row: {
             "link": row[0],
         }
         return self.cursor.execute(
-            sql_queries.SELECT_SPECIFIC_NEWS_FOR_FAVOURITE_QUERY,
-            (news_id,)
+            sql_queries.SELECT_SPECIFIC_FILMS_FOR_FAVOURITE_QUERY,
+            (films_id,)
         ).fetchall()
 
-    def sql_insert_favourite_news_command(self, owner_telegram_id, link):
-        self.cursor.execute(sql_queries.INSERT_FAVOURITE_NEWS_QUERY,
+    def sql_insert_favourite_films_command(self, owner_telegram_id, link):
+        self.cursor.execute(sql_queries.INSERT_FAVOURITE_FILMS_QUERY,
                             (None,
                              owner_telegram_id,
                              link,
@@ -206,12 +206,12 @@ class Database:
                             )
         self.connection.commit()
 
-    def sql_select_owner_news_command(self, owner_telegram_id):
+    def sql_select_owner_films_command(self, owner_telegram_id):
         self.cursor.row_factory = lambda cursor, row: {
             "link": row[0],
         }
         return self.cursor.execute(
-            sql_queries.SELECT_OWNER_NEWS_QUERY,
+            sql_queries.SELECT_OWNER_FILMS_QUERY,
             (owner_telegram_id,)
         ).fetchall()
 

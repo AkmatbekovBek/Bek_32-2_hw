@@ -32,8 +32,8 @@ async def new_start_keyboard():
         callback_data="reference_menu"
     )
     parser_button = InlineKeyboardButton(
-        "Новости 📰",
-        callback_data="news_parsing"
+        "Фильмы 🎥",
+        callback_data="films_parsing"
     )
     markup.add(
         random_profiles_button
@@ -93,11 +93,11 @@ async def if_not_profile_keyboard():
     return markup
 
 
-async def save_news_keyboard(news_id):
+async def save_films_keyboard(films_id):
     markup = InlineKeyboardMarkup()
     save_button = InlineKeyboardButton(
         "Сохранить 💾",
-        callback_data=f"save_news_{news_id}"
+        callback_data=f"save_films_{films_id}"
     )
     markup.add(
         save_button,

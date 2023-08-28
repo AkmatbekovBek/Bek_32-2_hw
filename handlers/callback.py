@@ -4,10 +4,10 @@ import re
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from config import bot
 from aiogram import types, Dispatcher
-from scraping.news_scraper import NewsScraper
+from scraping.films_scraper import FilmsScraper
 
 from database.sql_commands import Database
-from keyboards.start_kb import like_dislike_keyboard, my_profile_detail_keyboard, if_not_profile_keyboard, save_news_keyboard
+from keyboards.start_kb import like_dislike_keyboard, my_profile_detail_keyboard, if_not_profile_keyboard, save_films_keyboard
 
 
 async def admin_user_call(call: types.CallbackQuery):
@@ -102,38 +102,38 @@ async def delete_profile_call(call: types.CallbackQuery):
     )
 
 
-async def news_parsing_call(call: types.CallbackQuery):
-    scraper = NewsScraper()
+async def films_parsing_call(call: types.CallbackQuery):
+    scraper = FilmsScraper()
     data = scraper.parse_data()
     for url in data:
-        Database().sql_insert_news_command(link=url)
-        news_id = Database().sql_select_specific_news_command(link=url)
-        print(news_id[0]['id'])
+        Database().sql_insert_films_command(link=url)
+        films_id = Database().sql_select_specific_films_command(link=url)
+        print(films_id[0]['id'])
         await bot.send_message(
             chat_id=call.message.chat.id,
             text=url,
-            reply_markup=await save_news_keyboard(news_id=news_id[0]['id'])
+            reply_markup=await save_films_keyboard(films_id=films_id[0]['id'])
         )
 
 
-async def save_news_call(call: types.CallbackQuery):
-    news_id = re.sub("save_news_", "", call.data)
-    link = Database().sql_select_specific_news_for_favourite_command(
-        news_id=news_id
+async def save_films_call(call: types.CallbackQuery):
+    films_id = re.sub("save_films_", "", call.data)
+    link = Database().sql_select_specific_films_for_favourite_command(
+        films_id=films_id
     )
     print(link[0]["link"])
-    Database().sql_insert_favourite_news_command(
+    Database().sql_insert_favourite_films_command(
         owner_telegram_id=call.from_user.id,
         link=link[0]["link"]
     )
     await bot.send_message(
         chat_id=call.message.chat.id,
-        text="You saved news"
+        text="Вы сохранили фильм"
     )
 
 
-async def my_news_call(call: types.CallbackQuery):
-    links = Database().sql_select_owner_news_command(
+async def my_films_call(call: types.CallbackQuery):
+    links = Database().sql_select_owner_films_command(
         owner_telegram_id=call.from_user.id
     )
     for link in links:
@@ -149,6 +149,6 @@ def register_callback_handlers(dp: Dispatcher):
     dp.register_callback_query_handler(random_profiles_call, lambda call: call.data == "random_profiles")
     dp.register_callback_query_handler(like_call, lambda call: "like_button_" in call.data)
     dp.register_callback_query_handler(delete_profile_call, lambda call: call.data == "delete_profile")
-    dp.register_callback_query_handler(news_parsing_call, lambda call: call.data == "news_parsing")
-    dp.register_callback_query_handler(save_news_call, lambda call: "save_news_" in call.data)
-    dp.register_callback_query_handler(my_news_call, lambda call: call.data == "my_news_call_data")
+    dp.register_callback_query_handler(films_parsing_call, lambda call: call.data == "films_parsing")
+    dp.register_callback_query_handler(save_films_call, lambda call: "save_films_" in call.data)
+    dp.register_callback_query_handler(my_films_call, lambda call: call.data == "my_films_call_data")
